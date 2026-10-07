@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { auth } from './api.js'
+import logoDark from './assets/brand/dark-mode-horizontal-header.webp'
+import logoLight from './assets/brand/light-mode-horizontal-header.webp'
 
 function Field(props) {
   return <input {...props} />
@@ -35,9 +37,14 @@ export default function Login({ onSession }) {
 
   if (step === 'creds') {
     return (
-      <form className="card" onSubmit={(e) => { e.preventDefault(); run(async () => route(await auth.login(email, password))) }}>
-        <h1>Rock Ledger</h1>
-        <p className="muted">Rock Mission Ministries NPC</p>
+      <form className="card auth-card" onSubmit={(e) => { e.preventDefault(); run(async () => route(await auth.login(email, password))) }}>
+        <picture className="auth-brand brand-logo">
+          <source media="(prefers-color-scheme: dark)" srcSet={logoDark} />
+          <img src={logoLight} width="900" height="225" alt="Rock Ledger — Faithful stewardship. Greater impact." />
+        </picture>
+        <span className="eyebrow">ROCK MISSION MINISTRIES</span>
+        <h1>Welcome back.</h1>
+        <p className="muted">Sign in securely to continue to your ledger.</p>
         <Field type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
         <Field type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
         {error && <p className="error">{error}</p>}
@@ -48,7 +55,7 @@ export default function Login({ onSession }) {
 
   if (step === 'password') {
     return (
-      <form className="card" onSubmit={(e) => { e.preventDefault(); run(async () => route(await auth.setPassword(newPassword))) }}>
+      <form className="card auth-card" onSubmit={(e) => { e.preventDefault(); run(async () => route(await auth.setPassword(newPassword))) }}>
         <h2>Choose your own password</h2>
         <p className="muted">Replace the temporary password. Use at least 12 characters. A few random words works well.</p>
         <Field type="password" placeholder="New password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" minLength={12} required />
@@ -61,7 +68,7 @@ export default function Login({ onSession }) {
   if (step === 'enrol') {
     const grouped = enrol?.secret?.match(/.{1,4}/g)?.join(' ')
     return (
-      <form className="card" onSubmit={(e) => { e.preventDefault(); run(async () => route(await auth.enrolConfirm(code))) }}>
+      <form className="card auth-card" onSubmit={(e) => { e.preventDefault(); run(async () => route(await auth.enrolConfirm(code))) }}>
         <h2>Set up your authenticator app</h2>
         <p className="muted">Install Google Authenticator or Microsoft Authenticator. Add an account, choose "enter a setup key" and type this key:</p>
         {enrol ? <p className="secretkey">{grouped}</p> : <p className="muted">Preparing…</p>}
@@ -74,7 +81,7 @@ export default function Login({ onSession }) {
   }
 
   return (
-    <form className="card" onSubmit={(e) => { e.preventDefault(); run(async () => route(await auth.verify(code))) }}>
+    <form className="card auth-card" onSubmit={(e) => { e.preventDefault(); run(async () => route(await auth.verify(code))) }}>
       <h2>Enter your code</h2>
       <p className="muted">Open your authenticator app and type the 6-digit code for Rock Ledger.</p>
       <Field inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit code" value={code} onChange={(e) => setCode(e.target.value)} maxLength={7} autoFocus required />

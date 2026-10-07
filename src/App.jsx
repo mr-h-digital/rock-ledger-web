@@ -4,6 +4,9 @@ import BankImport from './BankImport.jsx'
 import Login from './Login.jsx'
 import Users from './Users.jsx'
 import Account from './Account.jsx'
+import logoDark from './assets/brand/dark-mode-horizontal-header.webp'
+import logoLight from './assets/brand/light-mode-horizontal-header.webp'
+import iconDark from './assets/brand/dark-mode-app-icon.webp'
 
 const zar = (n) =>
   new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(n)
@@ -42,9 +45,12 @@ function AddTransaction({ lookups, onSaved }) {
   }
 
   return (
-    <form className="card" onSubmit={submit}>
-      <h2>New entry</h2>
-      <div className="seg">
+    <form className="card entry-card" onSubmit={submit}>
+      <div className="section-heading">
+        <div><span className="eyebrow">LEDGER</span><h2>New entry</h2></div>
+        <span className="heading-icon" aria-hidden="true">+</span>
+      </div>
+      <div className="seg transaction-types">
         {[['INCOME', 'Money in'], ['EXPENSE', 'Money out'], ['LOAN_IN', 'Loan in'], ['LOAN_OUT', 'Loan repaid']].map(([k, label]) => (
           <button type="button" key={k} className={form.kind === k ? 'on' : ''}
             onClick={() => setForm({ ...form, kind: k, categoryId: '' })}>
@@ -80,24 +86,39 @@ function Ledger({ rows, onReverse, canWrite }) {
   const income = rows.filter((r) => r.kind === 'INCOME' && !r.reversalOfId).reduce((s, r) => s + Number(r.amount), 0)
   const expense = rows.filter((r) => r.kind === 'EXPENSE' && !r.reversalOfId).reduce((s, r) => s + Number(r.amount), 0)
   return (
-    <section>
-      <div className="totals">
-        <div><span className="muted">In</span><b>{zar(income)}</b></div>
-        <div><span className="muted">Out</span><b>{zar(expense)}</b></div>
+    <section className="ledger-panel">
+      <div className="section-heading">
+        <div><span className="eyebrow">ACTIVITY</span><h2>Recent transactions</h2></div>
+        <span className="period-label">Last 90 days</span>
       </div>
-      <p className="muted">Last 90 days. Totals exclude reversals; reversed entries are still listed.</p>
-      {rows.map((r) => (
-        <div className="row" key={r.id}>
-          <div>
-            <b>{r.counterparty || r.reference || r.kind}</b>
-            <div className="muted">{r.txnDate}{r.kind.startsWith('LOAN_') ? ' · loan' : ''}{r.reversalOfId ? ' · reversal' : ''}</div>
-          </div>
-          <div className={r.kind === 'INCOME' || r.kind === 'LOAN_IN' ? 'in' : 'out'}>
-            {r.kind === 'INCOME' || r.kind === 'LOAN_IN' ? '+' : '−'}{zar(r.amount)}
-            {canWrite && !r.reversalOfId && <button className="link" onClick={() => onReverse(r.id)}>reverse</button>}
-          </div>
+      <div className="totals">
+        <div className="total-card income-total"><span className="muted">Money in</span><b>{zar(income)}</b></div>
+        <div className="total-card expense-total"><span className="muted">Money out</span><b>{zar(expense)}</b></div>
+      </div>
+      <p className="muted ledger-note">Totals exclude reversals; reversed entries remain listed for your records.</p>
+      {rows.length === 0 ? (
+        <div className="empty-state"><span aria-hidden="true">✦</span><b>No transactions yet</b><p>Your latest activity will appear here.</p></div>
+      ) : (
+        <div className="transaction-list">
+          {rows.map((r) => (
+            <div className="row transaction-row" key={r.id}>
+              <div className="transaction-description">
+                <span className={`transaction-icon ${r.kind === 'INCOME' || r.kind === 'LOAN_IN' ? 'positive' : 'negative'}`} aria-hidden="true">
+                  {r.kind === 'INCOME' || r.kind === 'LOAN_IN' ? '↓' : '↑'}
+                </span>
+                <div>
+                  <b>{r.counterparty || r.reference || r.kind}</b>
+                  <div className="muted">{r.txnDate}{r.kind.startsWith('LOAN_') ? ' · loan' : ''}{r.reversalOfId ? ' · reversal' : ''}</div>
+                </div>
+              </div>
+              <div className={r.kind === 'INCOME' || r.kind === 'LOAN_IN' ? 'in' : 'out'}>
+                <b>{r.kind === 'INCOME' || r.kind === 'LOAN_IN' ? '+' : '−'}{zar(r.amount)}</b>
+                {canWrite && !r.reversalOfId && <button className="link" onClick={() => onReverse(r.id)}>reverse</button>}
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </section>
   )
 }
@@ -129,14 +150,24 @@ function Shell({ session, onSignOut }) {
   if (user.role === 'ADMIN') tabs.push(['users', 'People'])
   tabs.push(['account', 'Account'])
 
-  if (!lookups) return <main><p>{error || 'Loading…'}</p></main>
+  if (!lookups) return <main className="app-shell"><p>{error || 'Loading…'}</p></main>
 
   return (
-    <main>
-      <header>
-        <h1>Rock Ledger</h1>
-        <span className="muted">{user.name}</span>
+    <main className="app-shell">
+      <header className="topbar">
+        <picture className="brand-logo">
+          <source media="(prefers-color-scheme: dark)" srcSet={logoDark} />
+          <img src={logoLight} width="900" height="225" alt="Rock Ledger — Faithful stewardship. Greater impact." />
+        </picture>
+        <div className="profile-chip">
+          <span className="avatar" aria-hidden="true">{user.name.charAt(0).toUpperCase()}</span>
+          <span><b>{user.name}</b><small>{user.role.toLowerCase()}</small></span>
+        </div>
       </header>
+      <section className="welcome-banner">
+        <div><span className="eyebrow">ROCK MISSION MINISTRIES</span><h1>Your finances, in good hands.</h1><p>Clear records. Confident decisions. A faithful view of every rand.</p></div>
+        <img className="welcome-icon" src={iconDark} width="256" height="256" alt="" />
+      </section>
       {error && <p className="error">{error}</p>}
       <div className="seg tabs">
         {tabs.map(([k, label]) => (
@@ -144,10 +175,10 @@ function Shell({ session, onSignOut }) {
         ))}
       </div>
       {tab === 'ledger' && (
-        <>
+        <div className={`ledger-layout ${canWrite ? '' : 'read-only-layout'}`}>
           {canWrite && <AddTransaction lookups={lookups} onSaved={load} />}
           <Ledger rows={rows} onReverse={reverse} canWrite={canWrite} />
-        </>
+        </div>
       )}
       {tab === 'bank' && canWrite && <BankImport lookups={lookups} onPosted={load} />}
       {tab === 'users' && user.role === 'ADMIN' && <Users me={user} />}
@@ -171,6 +202,6 @@ export default function App() {
   }
 
   if (booting) return <main><p className="muted">Loading…</p></main>
-  if (!session) return <main><Login onSession={setSession} /></main>
+  if (!session) return <main className="auth-shell"><Login onSession={setSession} /></main>
   return <Shell session={session} onSignOut={signOut} />
 }
