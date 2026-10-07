@@ -1,83 +1,103 @@
-# Rock Ledger — Frontend
+# Rock Ledger | Frontend
 
-The React/Vite web app for Rock Ledger, an accounting and compliance ledger for Rock Mission Ministries NPC. It provides a focused interface for secure sign-in, day-to-day ledger capture, bank-statement review, and user administration.
+> A clear, secure workspace for the ministry's day-to-day finances.
 
-[Project overview and deployment guide](../README.md) · [Backend documentation](../backend/README.md)
+[![React](https://img.shields.io/badge/React-18-149eca?logo=react&logoColor=white)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite&logoColor=white)](https://vite.dev/)
+[![Node](https://img.shields.io/badge/Node.js-20-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
-## What it does
+**Rock Ledger** is the React web application for Rock Mission Ministries NPC. Capture and review ledger activity, import Capitec statements, and manage access from one interface.
 
-- Signs users in with a password and authenticator-app code (TOTP), including first-login password changes and authenticator enrolment.
-- Shows the recent ledger and supports recording income, expenses, transfers, and director loans. Corrections are recorded as reversals rather than edits.
-- Imports Capitec PDF statements for review. Imported lines are not added to the ledger until posted.
-- Provides administrator tools for creating, resetting, and deactivating users.
-- Adapts the available actions to the signed-in user's role: `ADMIN`, `TREASURER`, or `VIEWER`.
+| [Project overview](../README.md) | [Backend guide](../backend/README.md) |
+|:---:|:---:|
 
-## Requirements
+## At a glance
+
+| Ledger workspace | Secure access | Statement review |
+|---|---|---|
+| Capture income, expenses, transfers, and loans; correct entries with reversals. | Password + authenticator code, with role-aware screens for admins, treasurers, and viewers. | Upload Capitec PDFs, inspect parsed lines, then choose what to post. |
+
+```mermaid
+flowchart LR
+    U[You] -->|Browser| FE[React + Vite]
+    FE -->|Credentialed API requests| API[Rock Ledger API]
+    API --> DB[(PostgreSQL)]
+```
+
+## Get started
+
+### You will need
 
 - Node.js and npm
-- The [Rock Ledger backend](../backend/README.md) and PostgreSQL database for sign-in and application data
+- A running [backend](../backend/README.md) and PostgreSQL database
 
-## Run locally
+### 1. Install dependencies
 
-From this directory:
+Run from this directory:
 
 ```bash
 npm install
 ```
 
-Create a local `.env` file from the example:
+### 2. Set the API address
 
-```bash
+Create your local environment file:
+
+```powershell
 Copy-Item .env.example .env
 ```
 
-In macOS/Linux shells, use `cp .env.example .env` instead.
+Then set the backend origin in `.env`:
 
-Set `VITE_API_URL` in `.env` to the backend origin. The example uses `http://localhost:8080`, which is the default local backend address.
+```dotenv
+VITE_API_URL=http://localhost:8080
+```
 
-Start the development server:
+Use `cp .env.example .env` on macOS/Linux. Keep the backend's `ALLOWED_ORIGIN` set to the frontend's exact origin (Vite defaults to `http://localhost:5173`).
+
+> **Keep secrets on the server.** Vite bundles `VITE_*` values into browser-visible assets. Never put passwords, tokens, or private keys in frontend environment variables.
+
+### 3. Start the app
 
 ```bash
 npm run dev
 ```
 
-Vite prints the local URL, usually `http://localhost:5173`. Keep the backend's `ALLOWED_ORIGIN` set to that exact origin so browser requests and the refresh cookie are allowed.
+Open the URL printed by Vite, usually `http://localhost:5173`.
 
-## Configuration
-
-| Variable | Purpose | Default |
-|---|---|---|
-| `VITE_API_URL` | Base URL of the backend API; set at build time | `http://localhost:8080` |
-
-Do not put secrets in frontend environment variables: Vite embeds `VITE_*` values in client-side assets. The root `.gitignore` excludes local `.env` files while keeping `.env.example` tracked.
-
-## Build and preview
+## Build for production
 
 ```bash
 npm run build
 npm run preview
 ```
 
-The production bundle is generated in `dist/`. The Vite base path is `/`, so deploy the bundle at the domain root. The repository's GitHub Actions workflow builds and deploys the frontend to GitHub Pages; deployment and custom-domain notes are in the [project README](../README.md).
+The production site is generated in `dist/` and is configured to run at the domain root. GitHub Actions builds and deploys it to GitHub Pages; see the [deployment guide](../README.md).
 
-## Security notes
+## Configuration
 
-- Access and pending-login tokens are kept in memory, not browser storage.
-- The refresh token is an HttpOnly cookie managed by the backend; the frontend cannot read it.
-- Requests include credentials and the backend's required `X-Requested-With` header.
-- The browser app is not a substitute for server-side authorization. The backend enforces roles and validates all writes.
+| Variable | What it controls | Default |
+|---|---|---|
+| `VITE_API_URL` | Backend API origin (embedded at build time) | `http://localhost:8080` |
 
-## Project structure
+## Security by design
+
+- Short-lived access and sign-in-step tokens stay in memory; they are not written to browser storage.
+- A backend-managed HttpOnly refresh cookie supports session refresh and is not readable by client-side JavaScript.
+- The app sends credentialed requests and the `X-Requested-With` header required by the API.
+- The server remains the authority for roles, permissions, and input validation.
+
+## Source map
 
 ```text
 src/
-  Account.jsx      Account details, password change, sign-out
-  App.jsx          Session handling, navigation, ledger capture
-  BankImport.jsx   Statement upload and bank-line review/posting
-  Login.jsx        Password, first-login, and TOTP sign-in flow
+  Account.jsx      Profile, password change, sign-out
+  App.jsx          Session, navigation, ledger capture
+  BankImport.jsx   Statement upload and line review
+  Login.jsx        Password and authenticator sign-in
   Users.jsx        Administrator user management
-  api.js           Authenticated API client
+  api.js           API client and session handling
   styles.css       Application styles
 ```
 
-For accounting rules, API configuration, database migrations, and server-side security, see the [backend README](../backend/README.md).
+For API routes, roles, accounting rules, and database configuration, continue to the [backend guide](../backend/README.md).
