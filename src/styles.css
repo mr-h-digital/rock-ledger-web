@@ -1,0 +1,34 @@
+:root {
+  --ink: #1f2a44; --bg: #f5f6f9; --card: #fff; --line: #e3e6ee;
+  --in: #1b7f4b; --out: #b3321f; --accent: #1f2a44;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --ink: #e8ebf3; --bg: #12151d; --card: #1c212c; --line: #2c3342; --in: #5fd596; --out: #ff8b78; --accent: #5b7cff; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.4 system-ui, sans-serif; }
+main { max-width: 560px; margin: 0 auto; padding: 16px; padding-bottom: env(safe-area-inset-bottom); }
+header { display: flex; justify-content: space-between; align-items: center; }
+h1 { font-size: 1.4rem; margin: 8px 0; } h2 { font-size: 1.1rem; margin: 0 0 8px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; margin: 12px 0; }
+input, select { width: 100%; padding: 12px; font-size: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+button { padding: 12px; font-size: 16px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
+button.link { background: none; color: var(--accent); padding: 0 0 0 8px; font-size: 13px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg button { background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
+.seg button.on { background: var(--accent); color: #fff; }
+.muted { color: #7b8499; font-size: 13px; } .error { color: var(--out); }
+.totals { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+.totals div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; }
+.row { display: flex; justify-content: space-between; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.in { color: var(--in); text-align: right; } .out { color: var(--out); text-align: right; }
+
+.row.col { display: block; }
+.rowtop { display: flex; justify-content: space-between; gap: 8px; cursor: pointer; }
+.postform { display: grid; gap: 8px; margin-top: 10px; }
+
+.seg.tabs { grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); margin: 8px 0; }
+.secretkey { font: 600 1.15rem/1.4 ui-monospace, monospace; letter-spacing: .06em; word-break: break-all; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 0; }
+.actions { display: flex; gap: 12px; padding-top: 6px; }
+.actions button.link { padding: 0; }
+a { color: var(--accent); }
