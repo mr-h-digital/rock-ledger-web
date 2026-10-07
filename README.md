@@ -72,7 +72,7 @@ npm run build
 npm run preview
 ```
 
-The production site is generated in `dist/` and is configured to run at the domain root. GitHub Actions builds and deploys it to GitHub Pages; see the [deployment guide](../README.md).
+The production site is generated in `dist/`. Relative asset URLs let it work both at the GitHub Pages project path and at the custom-domain root. GitHub Actions builds and deploys it to GitHub Pages; see the [deployment guide](../README.md).
 
 ## Configuration
 
