@@ -1,14 +1,19 @@
-# Rock Ledger | Frontend
+﻿<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand/dark-mode-horizontal-header.webp">
+  <img src="docs/brand/light-mode-horizontal-header.webp" alt="Rock Ledger: Faithful stewardship. Greater impact.">
+</picture>
+
+# Frontend
 
 > A clear, secure workspace for the ministry's day-to-day finances.
 
 [![React](https://img.shields.io/badge/React-18-149eca?logo=react&logoColor=white)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite&logoColor=white)](https://vite.dev/)
-[![Node](https://img.shields.io/badge/Node.js-20-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
 **Rock Ledger** is the React web application for Rock Mission Ministries NPC. Capture and review ledger activity, import Capitec statements, and manage access from one interface.
 
-| [Project overview](../README.md) | [Backend guide](../backend/README.md) |
+| [Backend repository](https://github.com/mr-h-digital/rock-ledger-api) | [Live site](https://mr-h-digital.github.io/rock-ledger-web/) |
 |:---:|:---:|
 
 ## At a glance
@@ -29,7 +34,7 @@ flowchart LR
 ### You will need
 
 - Node.js and npm
-- A running [backend](../backend/README.md) and PostgreSQL database
+- A running [backend](https://github.com/mr-h-digital/rock-ledger-api) and PostgreSQL database
 
 ### 1. Install dependencies
 
@@ -72,7 +77,13 @@ npm run build
 npm run preview
 ```
 
-The production site is generated in `dist/`. Relative asset URLs let it work both at the GitHub Pages project path and at the custom-domain root. GitHub Actions builds and deploys it to GitHub Pages; see the [deployment guide](../README.md).
+The production site is generated in `dist/`. Relative asset URLs let it work both at the GitHub Pages project path and at a custom-domain root.
+
+### Deploy to GitHub Pages
+
+1. In the repository, open **Settings â†’ Pages** and set **Source** to **GitHub Actions**.
+2. Push to `main`. The workflow runs `npm run build` with `VITE_API_URL` pointing at the production API and publishes `dist/`.
+3. Do not commit `dist/`; it is generated and ignored.
 
 ## Configuration
 
@@ -100,4 +111,4 @@ src/
   styles.css       Application styles
 ```
 
-For API routes, roles, accounting rules, and database configuration, continue to the [backend guide](../backend/README.md).
+For API routes, roles, accounting rules, and database configuration, continue to the [backend repository](https://github.com/mr-h-digital/rock-ledger-api).
