@@ -49,6 +49,17 @@ async function request(path, options = {}) {
   return parse(res)
 }
 
+async function requestFile(path) {
+  let res = await send(path)
+  if (res.status === 401 && accessToken) {
+    const s = await auth.refresh()
+    if (s) res = await send(path)
+    else { accessToken = null; onSignedOut() }
+  }
+  if (!res.ok) await parse(res)
+  return res.blob()
+}
+
 // One request at a time may spend the single-use refresh cookie.
 let refreshing = null
 export const auth = {
@@ -87,6 +98,15 @@ export const api = {
   lookups: () => request('/api/lookups'),
   transactions: () => request('/api/transactions'),
   addTransaction: (body) => request('/api/transactions', { method: 'POST', body: JSON.stringify(body) }),
+  transactionAttachments: (id) => request(`/api/transactions/${id}/attachments`),
+  transactionDocumentHistory: (id) => request(`/api/transactions/${id}/document-history`),
+  uploadTransactionAttachment: (id, file) => {
+    const f = new FormData()
+    f.append('file', file)
+    return request(`/api/transactions/${id}/attachments`, { method: 'POST', body: f })
+  },
+  downloadAttachment: (id) => requestFile(`/api/attachments/${id}/file`),
+  deleteAttachment: (id) => request(`/api/attachments/${id}`, { method: 'DELETE' }),
   uploadStatement: (file) => { const f = new FormData(); f.append('file', file); return request('/api/bank-statements', { method: 'POST', body: f }) },
   bankLines: (status = 'unposted') => request(`/api/bank-lines?status=${status}`),
   postBankLine: (id, body) => request(`/api/bank-lines/${id}/post`, { method: 'POST', body: JSON.stringify(body) }),

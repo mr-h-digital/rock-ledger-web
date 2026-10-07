@@ -82,7 +82,117 @@ function AddTransaction({ lookups, onSaved }) {
   )
 }
 
+function TransactionAttachments({ transactionId, canWrite }) {
+  const [attachments, setAttachments] = useState([])
+  const [history, setHistory] = useState([])
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function load() {
+    const [files, events] = await Promise.all([
+      api.transactionAttachments(transactionId),
+      api.transactionDocumentHistory(transactionId),
+    ])
+    setAttachments(files)
+    setHistory(events)
+  }
+
+  useEffect(() => {
+    load().catch((err) => setError(err.message))
+  }, [transactionId])
+
+  async function upload(e) {
+    const files = [...e.target.files]
+    e.target.value = ''
+    setError('')
+    setBusy(true)
+    const failures = []
+    for (const file of files) {
+      try {
+        await api.uploadTransactionAttachment(transactionId, file)
+      } catch (err) {
+        failures.push(`${file.name}: ${err.message}`)
+      }
+    }
+    try {
+      await load()
+    } catch (err) {
+      failures.push(err.message)
+    }
+    setError(failures.join(' · '))
+    setBusy(false)
+  }
+
+  async function download(attachment) {
+    setError('')
+    try {
+      const blob = await api.downloadAttachment(attachment.id)
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = attachment.file_name
+      link.click()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function remove(attachment) {
+    if (!confirm(`Delete "${attachment.file_name}"? This cannot be undone.`)) return
+    setError('')
+    setBusy(true)
+    try {
+      await api.deleteAttachment(attachment.id)
+      await load()
+    } catch (err) {
+      setError(err.message)
+    }
+    setBusy(false)
+  }
+
+  return (
+    <div className="col">
+      <b>Supporting documents</b>
+      {attachments.map((attachment) => (
+        <div className="row" key={attachment.id}>
+          <button type="button" className="link" onClick={() => download(attachment)}>
+            {attachment.file_name}
+          </button>
+          <span className="muted">
+            uploaded by {attachment.uploaded_by} · {new Date(attachment.uploaded_at).toLocaleString()}
+          </span>
+          {canWrite && (
+            <button type="button" className="link" disabled={busy} onClick={() => remove(attachment)}>
+              delete
+            </button>
+          )}
+        </div>
+      ))}
+      {attachments.length === 0 && <span className="muted">No documents attached.</span>}
+      {canWrite && (
+        <label className="muted">
+          {busy ? 'Working…' : 'Attach documents'}
+          <input type="file" multiple disabled={busy} onChange={upload} />
+        </label>
+      )}
+      {history.length > 0 && (
+        <div className="col">
+          <b>Document activity</b>
+          {history.map((event, index) => (
+            <span className="muted" key={`${event.at}-${index}`}>
+              {new Date(event.at).toLocaleString()} — {event.actor} {event.action === 'DELETE_DOCUMENT' ? 'deleted' : 'uploaded'} {event.detail}
+            </span>
+          ))}
+        </div>
+      )}
+      {error && <p className="error">{error}</p>}
+    </div>
+  )
+}
+
 function Ledger({ rows, onReverse, canWrite }) {
+  const [open, setOpen] = useState(null)
   const income = rows.filter((r) => r.kind === 'INCOME' && !r.reversalOfId).reduce((s, r) => s + Number(r.amount), 0)
   const expense = rows.filter((r) => r.kind === 'EXPENSE' && !r.reversalOfId).reduce((s, r) => s + Number(r.amount), 0)
   return (
@@ -109,12 +219,16 @@ function Ledger({ rows, onReverse, canWrite }) {
                 <div>
                   <b>{r.counterparty || r.reference || r.kind}</b>
                   <div className="muted">{r.txnDate}{r.kind.startsWith('LOAN_') ? ' · loan' : ''}{r.reversalOfId ? ' · reversal' : ''}</div>
+                  <button type="button" className="link" onClick={() => setOpen(open === r.id ? null : r.id)}>
+                    {open === r.id ? 'Hide documents' : 'Documents'}
+                  </button>
                 </div>
               </div>
               <div className={r.kind === 'INCOME' || r.kind === 'LOAN_IN' ? 'in' : 'out'}>
                 <b>{r.kind === 'INCOME' || r.kind === 'LOAN_IN' ? '+' : '−'}{zar(r.amount)}</b>
                 {canWrite && !r.reversalOfId && <button className="link" onClick={() => onReverse(r.id)}>reverse</button>}
               </div>
+              {open === r.id && <TransactionAttachments transactionId={r.id} canWrite={canWrite} />}
             </div>
           ))}
         </div>
