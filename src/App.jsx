@@ -4,6 +4,8 @@ import BankImport from './BankImport.jsx'
 import Login from './Login.jsx'
 import Users from './Users.jsx'
 import Account from './Account.jsx'
+import Settings from './Settings.jsx'
+import { useTheme } from './theme.js'
 import logoDark from './assets/brand/dark-mode-horizontal-header.webp'
 import logoLight from './assets/brand/light-mode-horizontal-header.webp'
 import iconDark from './assets/brand/dark-mode-app-icon.webp'
@@ -237,7 +239,7 @@ function Ledger({ rows, onReverse, canWrite }) {
   )
 }
 
-function Shell({ session, onSignOut }) {
+function Shell({ session, onSignOut, theme, onTheme, isDark }) {
   const user = session.user
   const canWrite = user.role === 'ADMIN' || user.role === 'TREASURER'
   const [lookups, setLookups] = useState(null)
@@ -269,13 +271,15 @@ function Shell({ session, onSignOut }) {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <picture className="brand-logo">
-          <source media="(prefers-color-scheme: dark)" srcSet={logoDark} />
-          <img src={logoLight} width="900" height="225" alt="Rock Ledger — Faithful stewardship. Greater impact." />
-        </picture>
-        <div className="profile-chip">
-          <span className="avatar" aria-hidden="true">{user.name.charAt(0).toUpperCase()}</span>
-          <span><b>{user.name}</b><small>{user.role.toLowerCase()}</small></span>
+        <div className="brand-logo">
+          <img src={isDark ? logoDark : logoLight} width="900" height="225" alt="Rock Ledger — Faithful stewardship. Greater impact." />
+        </div>
+        <div className="topbar-right">
+          <div className="profile-chip">
+            <span className="avatar" aria-hidden="true">{user.name.charAt(0).toUpperCase()}</span>
+            <span><b>{user.name}</b><small>{user.role.toLowerCase()}</small></span>
+          </div>
+          <Settings theme={theme} onTheme={onTheme} />
         </div>
       </header>
       <section className="welcome-banner">
@@ -304,6 +308,7 @@ function Shell({ session, onSignOut }) {
 export default function App() {
   const [session, setSession] = useState(null)
   const [booting, setBooting] = useState(true)
+  const [theme, setTheme, isDark] = useTheme()
 
   useEffect(() => {
     setOnSignedOut(() => setSession(null))
@@ -316,6 +321,6 @@ export default function App() {
   }
 
   if (booting) return <main><p className="muted">Loading…</p></main>
-  if (!session) return <main className="auth-shell"><Login onSession={setSession} /></main>
-  return <Shell session={session} onSignOut={signOut} />
+  if (!session) return <main className="auth-shell"><Login onSession={setSession} isDark={isDark} /></main>
+  return <Shell session={session} onSignOut={signOut} theme={theme} onTheme={setTheme} isDark={isDark} />
 }

@@ -8,7 +8,7 @@ function Field(props) {
 }
 
 /** password -> (new password) -> (set up authenticator) -> 6-digit code */
-export default function Login({ onSession }) {
+export default function Login({ onSession, isDark }) {
   const [step, setStep] = useState('creds')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -41,10 +41,9 @@ export default function Login({ onSession }) {
   if (step === 'creds') {
     return (
       <form className="card auth-card" onSubmit={(e) => { e.preventDefault(); run(async () => route(await auth.login(email, password))) }}>
-        <picture className="auth-brand brand-logo">
-          <source media="(prefers-color-scheme: dark)" srcSet={logoDark} />
-          <img src={logoLight} width="900" height="225" alt="Rock Ledger — Faithful stewardship. Greater impact." />
-        </picture>
+        <div className="auth-brand brand-logo">
+          <img src={isDark ? logoDark : logoLight} width="900" height="225" alt="Rock Ledger — Faithful stewardship. Greater impact." />
+        </div>
         <span className="eyebrow">ROCK MISSION MINISTRIES</span>
         <h1>Welcome back.</h1>
         <p className="muted">Sign in securely to continue to your ledger.</p>

@@ -7,6 +7,10 @@
     <meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
     <title>Rock Ledger</title>
+    <script>
+      // Apply the saved theme before first paint to avoid a light/dark flash
+      try { var t = localStorage.getItem('ledger-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t) } catch (e) {}
+    </script>
     <link rel="icon" type="image/webp" href="./src/assets/brand/icon-only-variation.webp" />
     <link rel="icon" type="image/png" href="./src/assets/brand/icon-only-variation.png" />
     <link rel="apple-touch-icon" href="./src/assets/brand/light-mode-app-icon.png" />
