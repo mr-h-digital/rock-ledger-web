@@ -26,7 +26,10 @@ export default function Login({ onSession }) {
   async function run(fn) {
     setError('')
     setBusy(true)
-    try { await fn() } catch (e) { setError(e.message) } finally { setBusy(false) }
+    try { await fn() } catch (e) {
+      if (e.expired) { setStep('creds'); setEnrol(null); setCode('') }
+      setError(e.message)
+    } finally { setBusy(false) }
   }
 
   const route = (r) => {

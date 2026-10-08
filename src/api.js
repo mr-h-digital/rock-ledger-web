@@ -78,7 +78,16 @@ export const auth = {
     return r
   },
   async step(path, body) {
-    const r = await parse(await send(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined }, pendingToken))
+    const res = await send(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined }, pendingToken)
+    // A 401 with a WWW-Authenticate header comes from the token check itself: the sign-in step has timed out.
+    if (res.status === 401 && res.headers.get('WWW-Authenticate')) {
+      pendingToken = null
+      const err = new Error('That took too long. Please sign in again.')
+      err.status = 401
+      err.expired = true
+      throw err
+    }
+    const r = await parse(res)
     if (r.accessToken) return takeSession(r)
     if (r.pendingToken) pendingToken = r.pendingToken
     return r
