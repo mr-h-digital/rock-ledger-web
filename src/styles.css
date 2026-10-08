@@ -278,9 +278,19 @@ a { color: var(--accent); }
   min-height: 100vh;
   padding: 24px 20px;
   place-items: center;
+  position: relative;
+  isolation: isolate;
+}
+/* Pinned to the viewport so the image stays still while the form scrolls. */
+.auth-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   background:
     linear-gradient(rgba(11, 18, 32, .35), rgba(11, 18, 32, .55)),
     url('./assets/login-background.webp') center / cover no-repeat #0b1220;
+  pointer-events: none;
 }
 @supports (min-height: 100dvh) {
   .auth-shell { min-height: 100dvh; }
