@@ -5,6 +5,8 @@ import Login from './Login.jsx'
 import Users from './Users.jsx'
 import Account from './Account.jsx'
 import Settings from './Settings.jsx'
+import Dashboard from './Dashboard.jsx'
+import PeriodPicker, { defaultPeriod, describePeriod } from './PeriodPicker.jsx'
 import { useTheme } from './theme.js'
 import logoDark from './assets/brand/dark-mode-horizontal-header.webp'
 import logoLight from './assets/brand/light-mode-horizontal-header.webp'
@@ -193,23 +195,24 @@ function TransactionAttachments({ transactionId, canWrite }) {
   )
 }
 
-function Ledger({ rows, onReverse, canWrite }) {
+function Ledger({ rows, onReverse, canWrite, period, onPeriod, financialYears }) {
   const [open, setOpen] = useState(null)
   const income = rows.filter((r) => r.kind === 'INCOME' && !r.reversalOfId).reduce((s, r) => s + Number(r.amount), 0)
   const expense = rows.filter((r) => r.kind === 'EXPENSE' && !r.reversalOfId).reduce((s, r) => s + Number(r.amount), 0)
   return (
     <section className="ledger-panel">
       <div className="section-heading">
-        <div><span className="eyebrow">ACTIVITY</span><h2>Recent transactions</h2></div>
-        <span className="period-label">Last 90 days</span>
+        <div><span className="eyebrow">ACTIVITY</span><h2>Transactions</h2></div>
+        <span className="period-label">{describePeriod(period)}</span>
       </div>
+      <PeriodPicker value={period} onChange={onPeriod} financialYears={financialYears} compact />
       <div className="totals">
         <div className="total-card income-total"><span className="muted">Money in</span><b>{zar(income)}</b></div>
         <div className="total-card expense-total"><span className="muted">Money out</span><b>{zar(expense)}</b></div>
       </div>
       <p className="muted ledger-note">Totals exclude reversals; reversed entries remain listed for your records.</p>
       {rows.length === 0 ? (
-        <div className="empty-state"><span aria-hidden="true">✦</span><b>No transactions yet</b><p>Your latest activity will appear here.</p></div>
+        <div className="empty-state"><span aria-hidden="true">✦</span><b>No transactions in this period</b><p>Choose a different period above, or add an entry.</p></div>
       ) : (
         <div className="transaction-list">
           {rows.map((r) => (
@@ -246,22 +249,26 @@ function Shell({ session, onSignOut, theme, onTheme, isDark }) {
   const [rows, setRows] = useState([])
   const [tab, setTab] = useState('ledger')
   const [error, setError] = useState('')
+  const [period, setPeriod] = useState(defaultPeriod)
+  const [financialYears, setFinancialYears] = useState([])
 
   async function load() {
     try {
-      const [l, t] = await Promise.all([api.lookups(), api.transactions()])
+      const [l, t] = await Promise.all([api.lookups(), api.transactions(period.from, period.to)])
       setLookups(l)
       setRows(t)
+      setError('')
     } catch (e) { setError(e.message) }
   }
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [period.from, period.to])
+  useEffect(() => { api.financialYears().then(setFinancialYears).catch(() => {}) }, [])
 
   async function reverse(id) {
     if (!confirm('Reverse this entry? A matching correction entry will be added.')) return
     try { await api.reverse(id); load() } catch (e) { setError(e.message) }
   }
 
-  const tabs = [['ledger', 'Ledger']]
+  const tabs = [['ledger', 'Ledger'], ['dashboard', 'Dashboard']]
   if (canWrite) tabs.push(['bank', 'Bank import'])
   if (user.role === 'ADMIN') tabs.push(['users', 'People'])
   tabs.push(['account', 'Account'])
@@ -295,9 +302,10 @@ function Shell({ session, onSignOut, theme, onTheme, isDark }) {
       {tab === 'ledger' && (
         <div className={`ledger-layout ${canWrite ? '' : 'read-only-layout'}`}>
           {canWrite && <AddTransaction lookups={lookups} onSaved={load} />}
-          <Ledger rows={rows} onReverse={reverse} canWrite={canWrite} />
+          <Ledger rows={rows} onReverse={reverse} canWrite={canWrite} period={period} onPeriod={setPeriod} financialYears={financialYears} />
         </div>
       )}
+      {tab === 'dashboard' && <Dashboard period={period} onPeriod={setPeriod} financialYears={financialYears} />}
       {tab === 'bank' && canWrite && <BankImport lookups={lookups} onPosted={load} />}
       {tab === 'users' && user.role === 'ADMIN' && <Users me={user} />}
       {tab === 'account' && <Account user={user} onSignOut={onSignOut} />}

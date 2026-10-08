@@ -22,6 +22,10 @@
 |---|---|---|
 | Capture income, expenses, transfers, and loans; correct entries with reversals. | Password + authenticator code, with role-aware screens for admins, treasurers, and viewers. | Upload Capitec PDFs, inspect parsed lines, then choose what to post. |
 
+| Dashboard | Period filter | Exports |
+|---|---|---|
+| Income, expenses, surplus, cash and loans owed; monthly trend chart; breakdowns by category and fund. | Last 90 days, this/last month, calendar year, any financial year, or custom dates — shared by the Ledger and Dashboard tabs. | PDF financial report, summary CSV and full transactions CSV for the chosen period. |
+
 ```mermaid
 flowchart LR
     U[You] -->|Browser| FE[React + Vite]

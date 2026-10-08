@@ -8,6 +8,14 @@ let onSignedOut = () => {}
 
 export function setOnSignedOut(fn) { onSignedOut = fn }
 
+function rangeQuery(from, to) {
+  const q = new URLSearchParams()
+  if (from) q.set('from', from)
+  if (to) q.set('to', to)
+  const s = q.toString()
+  return s ? `?${s}` : ''
+}
+
 function send(path, options = {}, token = accessToken) {
   const isForm = options.body instanceof FormData
   return fetch(BASE + path, {
@@ -105,7 +113,10 @@ export const auth = {
 
 export const api = {
   lookups: () => request('/api/lookups'),
-  transactions: () => request('/api/transactions'),
+  transactions: (from, to) => request(`/api/transactions${rangeQuery(from, to)}`),
+  financialYears: () => request('/api/financial-years'),
+  reportSummary: (from, to) => request(`/api/reports/summary${rangeQuery(from, to)}`),
+  downloadReport: (kind, from, to) => requestFile(`/api/reports/${kind}${rangeQuery(from, to)}`),
   addTransaction: (body) => request('/api/transactions', { method: 'POST', body: JSON.stringify(body) }),
   transactionAttachments: (id) => request(`/api/transactions/${id}/attachments`),
   transactionDocumentHistory: (id) => request(`/api/transactions/${id}/document-history`),
