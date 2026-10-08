@@ -274,9 +274,18 @@ a { color: var(--accent); }
 
 .auth-shell {
   display: grid;
+  width: 100%;
   min-height: 100vh;
+  padding: 24px 20px;
   place-items: center;
+  background:
+    linear-gradient(rgba(11, 18, 32, .35), rgba(11, 18, 32, .55)),
+    url('./assets/login-background.webp') center / cover no-repeat #0b1220;
 }
+@supports (min-height: 100dvh) {
+  .auth-shell { min-height: 100dvh; }
+}
+.auth-shell .auth-card { box-shadow: 0 24px 60px rgba(0, 0, 0, .35); }
 .auth-card { width: min(100%, 450px); gap: 15px; padding: clamp(24px, 5vw, 38px); }
 .auth-card h1 { margin-bottom: -7px; font-size: 2rem; }
 .auth-card h2 { font-size: 1.35rem; }
