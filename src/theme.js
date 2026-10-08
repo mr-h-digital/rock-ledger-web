@@ -12,6 +12,12 @@ function apply(pref) {
   const root = document.documentElement
   if (pref === 'system') root.removeAttribute('data-theme')
   else root.setAttribute('data-theme', pref)
+  // Keep the mobile browser bar in step with a manually chosen theme
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+    if (!m.dataset.media) m.dataset.media = m.getAttribute('media') || ''
+    if (pref === 'system') m.setAttribute('media', m.dataset.media)
+    else m.setAttribute('media', m.dataset.media.includes(pref) ? 'all' : 'not all')
+  })
 }
 
 /** Returns [preference, setPreference, isDark]. Preference is 'system' | 'light' | 'dark', remembered per device. */
